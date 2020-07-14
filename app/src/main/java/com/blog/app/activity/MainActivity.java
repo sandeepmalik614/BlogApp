@@ -14,7 +14,6 @@ import android.widget.ImageView;
 
 import com.blog.app.R;
 import com.blog.app.fragment.HomeFragment;
-import com.blog.app.fragment.PostFragment;
 import com.blog.app.fragment.ProfileFragment;
 import com.blog.app.utils.AppPrefrences;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -63,23 +62,22 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        Fragment fragment = null;
-
         switch (item.getItemId()) {
             case R.id.navigation_home:
-                fragment = new HomeFragment();
+                loadFragment(new HomeFragment());
                 break;
 
             case R.id.navigation_post:
-                fragment = new PostFragment();
+                    Intent intent = new Intent(MainActivity.this, CustomGalleryActivity.class);
+                    startActivity(intent);
                 break;
 
             case R.id.navigation_profile:
-                fragment = new ProfileFragment();
+                loadFragment(new ProfileFragment());
                 break;
         }
 
-        return loadFragment(fragment);
+        return false;
     }
 
     private boolean loadFragment(Fragment fragment) {

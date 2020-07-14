@@ -23,6 +23,8 @@ import android.telephony.AccessNetworkConstants;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -117,6 +119,39 @@ public class ProfileFragment extends Fragment {
                 }
             }
         });
+
+        tvName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                openNameDialog();
+            }
+        });
+    }
+
+    private void openNameDialog() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        View view = inflater.inflate(R.layout.dialog_name_update, null);
+        builder.setView(view);
+        final AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+        final EditText edtName = view.findViewById(R.id.editText4);
+        Button btUpdate = view.findViewById(R.id.button4);
+        edtName.setText(userData.getName());
+
+        btUpdate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                reference = FirebaseDatabase.getInstance().getReference(USER_TABLE)
+                        .child(userData.getFirebaseId());
+                HashMap map = new HashMap();
+                map.put("name", edtName.getText().toString());
+                reference.updateChildren(map);
+                Toast.makeText(getActivity(), "Name updated successfully", Toast.LENGTH_SHORT).show();
+                alertDialog.dismiss();
+            }
+        });
+
     }
 
     private void openGalleryIntent() {
@@ -212,7 +247,7 @@ public class ProfileFragment extends Fragment {
 
             try {
                 uploadImageToServer(AppUtils.rotateImageIfRequired(bitmap, RealPathUtil.getPath(getActivity(), selectedImage)));
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -247,8 +282,9 @@ public class ProfileFragment extends Fragment {
                             Uri downUri = task.getResult();
                             HashMap<String, Object> hashMap = new HashMap<>();
                             hashMap.put("userImage", downUri.toString());
-                            reference.child(USER_TABLE).child(AppPrefrences.getFirebaseUserID(getActivity()))
-                                    .updateChildren(hashMap);
+                            reference = FirebaseDatabase.getInstance().getReference(USER_TABLE)
+                            .child(userData.getFirebaseId());
+                            reference.updateChildren(hashMap);
                             Toast.makeText(getActivity(), "Image updated successfully", Toast.LENGTH_SHORT).show();
                         }
                         pd.dismiss();
