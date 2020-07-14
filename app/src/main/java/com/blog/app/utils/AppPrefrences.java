@@ -21,42 +21,6 @@ public class AppPrefrences {
         mPrefsEditor.apply();
     }
 
-    public static String getUserImage(Context ctx) {
-        mPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
-        return mPrefs.getString("userImage", "");
-    }
-
-    public static void setUserImage(Context ctx, String value) {
-        mPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
-        mPrefsEditor = mPrefs.edit();
-        mPrefsEditor.putString("userImage", value);
-        mPrefsEditor.apply();
-    }
-
-    public static String getMobileNumber(Context ctx) {
-        mPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
-        return mPrefs.getString("MobileNumber", "");
-    }
-
-    public static void setMobileNumber(Context ctx, String value) {
-        mPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
-        mPrefsEditor = mPrefs.edit();
-        mPrefsEditor.putString("MobileNumber", value);
-        mPrefsEditor.apply();
-    }
-
-    public static String getUserName(Context ctx) {
-        mPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
-        return mPrefs.getString("name", "");
-    }
-
-    public static void setUserName(Context ctx, String value) {
-        mPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
-        mPrefsEditor = mPrefs.edit();
-        mPrefsEditor.putString("name", value);
-        mPrefsEditor.apply();
-    }
-
     public static String getFirebaseUserID(Context ctx) {
         mPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
         return mPrefs.getString("FirebaseUserID", "");

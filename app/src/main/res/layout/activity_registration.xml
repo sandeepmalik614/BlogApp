@@ -63,7 +63,7 @@
             android:layout_marginTop="8dp"
             android:textSize="14sp"
             android:maxLength="10"
-            android:inputType="text"/>
+            android:inputType="number"/>
 
 
         <Button

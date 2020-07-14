@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.blog.app.R;
@@ -33,15 +34,13 @@ import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
 import static com.blog.app.utils.AppPrefrences.setFirebaseUserID;
-import static com.blog.app.utils.AppPrefrences.setMobileNumber;
-import static com.blog.app.utils.AppPrefrences.setUserImage;
 import static com.blog.app.utils.AppPrefrences.setUserLoggedOut;
-import static com.blog.app.utils.AppPrefrences.setUserName;
 
 public class OtpVerificationActivity extends AppCompatActivity {
 
     private EditText edtOtp;
     private Button btVerify;
+    private TextView tvResend;
     private PhoneAuthProvider.OnVerificationStateChangedCallbacks mCallback;
     private String verificationCode, name, mobile, type;
     private FirebaseAuth auth;
@@ -54,6 +53,7 @@ public class OtpVerificationActivity extends AppCompatActivity {
 
         edtOtp = findViewById(R.id.editText6);
         btVerify = findViewById(R.id.button3);
+        tvResend = findViewById(R.id.textView7);
 
         type = getIntent().getStringExtra("otpType");
         if (type.equals("registration")) {
@@ -85,6 +85,20 @@ public class OtpVerificationActivity extends AppCompatActivity {
                 }
             }
         });
+
+        tvResend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (AppUtils.isInternetAvailable(OtpVerificationActivity.this)) {
+                    pd.show();
+                    sendOtp();
+                    varifyMobile();
+                }else{
+                    Toast.makeText(OtpVerificationActivity.this, "Please check your internet connection", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
     }
 
     private void sendOtp() {
@@ -146,15 +160,17 @@ public class OtpVerificationActivity extends AppCompatActivity {
                 pd.dismiss();
                 try {
                     User user = snapshot.getValue(User.class);
-                    setUserName(OtpVerificationActivity.this, user.getName());
-                    setUserImage(OtpVerificationActivity.this, user.getUserImage());
-                    setFirebaseUserID(OtpVerificationActivity.this, user.getFirebaseId());
-                    setMobileNumber(OtpVerificationActivity.this, user.getMobile());
-                    Intent intent = new Intent(OtpVerificationActivity.this, MainActivity.class)
-                            .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
-                    finish();
+                    if (user != null) {
+                        setUserLoggedOut(OtpVerificationActivity.this, false);
+                        setFirebaseUserID(OtpVerificationActivity.this, user.getFirebaseId());
+                        Intent intent = new Intent(OtpVerificationActivity.this, MainActivity.class)
+                                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+                        finish();
+                    } else {
+                        Toast.makeText(OtpVerificationActivity.this, "This mobile no is not registered with us, Please register.", Toast.LENGTH_SHORT).show();
+                    }
                 } catch (Exception e) {
                     Toast.makeText(OtpVerificationActivity.this, "Exception: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
@@ -181,18 +197,17 @@ public class OtpVerificationActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 pd.dismiss();
-                if(task.isSuccessful()){
-                    setUserName(OtpVerificationActivity.this, name);
-                    setUserImage(OtpVerificationActivity.this, "");
+                if (task.isSuccessful()) {
+                    AppUtils.addMobileNumber(mobile);
+                    setUserLoggedOut(OtpVerificationActivity.this, false);
                     setFirebaseUserID(OtpVerificationActivity.this, auth.getCurrentUser().getUid());
-                    setMobileNumber(OtpVerificationActivity.this, mobile);
                     Intent intent = new Intent(OtpVerificationActivity.this, MainActivity.class)
                             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
                     finish();
-                }else{
-                    Toast.makeText(OtpVerificationActivity.this, "Exception: "+
+                } else {
+                    Toast.makeText(OtpVerificationActivity.this, "Exception: " +
                             task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                 }
             }
