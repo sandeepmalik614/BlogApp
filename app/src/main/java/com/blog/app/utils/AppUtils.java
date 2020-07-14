@@ -7,9 +7,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
+import android.icu.text.SimpleDateFormat;
 import android.media.ExifInterface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.text.format.DateFormat;
 import android.util.Pair;
 import android.view.View;
 import android.widget.ImageView;
@@ -19,7 +21,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -86,5 +91,33 @@ public class AppUtils {
         HashMap<String, String> map = new HashMap<>();
         map.put("mobile", phone);
         reference.setValue(map);
+    }
+
+    @SuppressLint("NewApi")
+    public static String getTimeAgo(long millis) {
+
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - millis);
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - millis);
+        long hours = TimeUnit.MILLISECONDS.toHours(System.currentTimeMillis() - millis);
+        long days = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - millis);
+
+        if (seconds < 60) {
+            return String.valueOf(seconds) + " seconds ago";
+        } else if (minutes == 1) {
+            return String.valueOf(minutes) + " minute ago";
+        } else if (minutes < 60) {
+            return String.valueOf(minutes) + " minutes ago";
+        } else if (hours == 1) {
+            return String.valueOf(hours) + " hour ago";
+        } else if (hours < 24) {
+            return String.valueOf(hours) + " hours ago";
+        } else if (days == 1) {
+            return String.valueOf(days) + " day ago";
+        } else if (days < 30) {
+            return String.valueOf(days) + " days ago";
+        } else {
+            SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss aaa");
+            return formatter.format(new Date(millis));
+        }
     }
 }

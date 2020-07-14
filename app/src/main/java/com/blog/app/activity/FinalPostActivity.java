@@ -22,6 +22,7 @@ import com.blog.app.model.GalleryData;
 import com.blog.app.model.PostData;
 import com.blog.app.utils.AppConstant;
 import com.blog.app.utils.AppPrefrences;
+import com.blog.app.utils.AppUtils;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -34,6 +35,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -44,7 +46,6 @@ public class FinalPostActivity extends AppCompatActivity {
     private EditText edtDisc;
     private RecyclerView recyclerView;
     private Toolbar toolbar;
-    private DatabaseReference reference;
     private ArrayList<GalleryData> galleryData;
     private ProgressDialog pd;
 
@@ -63,7 +64,6 @@ public class FinalPostActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-        reference = FirebaseDatabase.getInstance().getReference();
         pd = new ProgressDialog(this);
         pd.setCanceledOnTouchOutside(false);
         pd.setCancelable(false);
@@ -77,7 +77,13 @@ public class FinalPostActivity extends AppCompatActivity {
             pd.show();
             ArrayList<String> imageList = new ArrayList<>();
             for (int i = 0; i < galleryData.size(); i++) {
-                uploadImage(BitmapFactory.decodeFile(galleryData.get(i).getImage()), imageList, i);
+                try {
+                    Bitmap bitmap = BitmapFactory.decodeFile(galleryData.get(i).getImage());
+                    bitmap = AppUtils.rotateImageIfRequired(bitmap, galleryData.get(i).getImage());
+                    uploadImage(bitmap, imageList, i);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -126,7 +132,7 @@ public class FinalPostActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             Uri downUri = task.getResult();
                             imageList.add(downUri.toString());
-                            if(i == (galleryData.size()-1)){
+                            if (i == (galleryData.size() - 1)) {
                                 pd.dismiss();
                                 finalSubmit(imageList);
                             }
