@@ -17,6 +17,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.blog.app.R;
+import com.blog.app.adapter.FinalPostImageAdapter;
 import com.blog.app.adapter.GalleryAdapter;
 import com.blog.app.model.GalleryData;
 import com.blog.app.model.PostData;
@@ -59,7 +60,7 @@ public class FinalPostActivity extends AppCompatActivity {
         edtDisc = findViewById(R.id.edittext5);
         recyclerView = findViewById(R.id.recyclerView2);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
-        recyclerView.setAdapter(new GalleryAdapter(this, galleryData, null));
+        recyclerView.setAdapter(new FinalPostImageAdapter(this, galleryData));
         toolbar = findViewById(R.id.toolbar1);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -72,7 +73,9 @@ public class FinalPostActivity extends AppCompatActivity {
 
     public void createPost(View view) {
         if (edtDisc.getText().toString().isEmpty()) {
-
+            Toast.makeText(this, "Please write something about post", Toast.LENGTH_SHORT).show();
+        } else if (galleryData.size() == 0) {
+            Toast.makeText(this, "You don't have any image to upload", Toast.LENGTH_SHORT).show();
         } else {
             pd.show();
             ArrayList<String> imageList = new ArrayList<>();

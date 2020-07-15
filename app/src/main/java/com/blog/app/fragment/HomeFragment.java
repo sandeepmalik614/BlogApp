@@ -27,6 +27,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 
 
 public class HomeFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
@@ -91,9 +93,10 @@ public class HomeFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                                     for (DataSnapshot snapshot1 : snapshot.getChildren()) {
                                         PostData postData = snapshot1.getValue(PostData.class);
                                         dataList.add(postData);
-                                        adapter.notifyDataSetChanged();
                                     }
                                 }
+                                Collections.reverse(dataList);
+                                adapter.notifyDataSetChanged();
                             }else{
                                 tvNoData.setVisibility(View.VISIBLE);
                                 recyclerView.setVisibility(View.GONE);

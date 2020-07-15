@@ -16,6 +16,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 import android.provider.Settings;
@@ -31,6 +33,7 @@ import android.widget.Toast;
 
 import com.blog.app.R;
 import com.blog.app.activity.LoginActivity;
+import com.blog.app.adapter.MyGalleryAdapter;
 import com.blog.app.model.User;
 import com.blog.app.utils.AppConstant;
 import com.blog.app.utils.AppPrefrences;
@@ -55,15 +58,20 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 
 import static android.app.Activity.RESULT_OK;
+import static com.blog.app.utils.AppConstant.POST_TABLE;
 import static com.blog.app.utils.AppConstant.USER_IMAGE_TABLE;
 import static com.blog.app.utils.AppConstant.USER_TABLE;
 
 public class ProfileFragment extends Fragment {
 
     private TextView tvName, tvMobile;
+    private RecyclerView recyclerView;
     private CircleImageView imgUser;
     private ImageView imgEdit;
     private User userData;
@@ -90,6 +98,8 @@ public class ProfileFragment extends Fragment {
         tvMobile = view.findViewById(R.id.textView9);
         imgUser = view.findViewById(R.id.circleImageView);
         imgEdit = view.findViewById(R.id.imageView1);
+        recyclerView = view.findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
         reference = FirebaseDatabase.getInstance().getReference();
         reference.keepSynced(true);
 
@@ -172,6 +182,7 @@ public class ProfileFragment extends Fragment {
                             tvName.setText(userData.getName());
                             tvMobile.setText(userData.getMobile());
                             Glide.with(getActivity()).load(userData.getUserImage()).into(imgUser);
+                            getMyGallery();
                         } catch (Exception e) {
                             Toast.makeText(getActivity(), "Exception: " +
                                     e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -283,7 +294,7 @@ public class ProfileFragment extends Fragment {
                             HashMap<String, Object> hashMap = new HashMap<>();
                             hashMap.put("userImage", downUri.toString());
                             reference = FirebaseDatabase.getInstance().getReference(USER_TABLE)
-                            .child(userData.getFirebaseId());
+                                    .child(userData.getFirebaseId());
                             reference.updateChildren(hashMap);
                             Toast.makeText(getActivity(), "Image updated successfully", Toast.LENGTH_SHORT).show();
                         }
@@ -297,5 +308,33 @@ public class ProfileFragment extends Fragment {
                 Toast.makeText(getActivity(), "Failed " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void getMyGallery() {
+        final ArrayList<String> imgList = new ArrayList<>();
+
+        pd.show();
+        reference.child(POST_TABLE).child(userData.getFirebaseId())
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        pd.dismiss();
+                        try {
+                            for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                                imgList.addAll((Collection<? extends String>) dataSnapshot.child("imageUrls").getValue());
+                            }
+                            Collections.reverse(imgList);
+                            recyclerView.setAdapter(new MyGalleryAdapter(getActivity(), imgList));
+                        } catch (Exception e) {
+                            Toast.makeText(getActivity(), "Exception: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
     }
 }

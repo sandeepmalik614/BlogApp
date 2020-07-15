@@ -8,9 +8,11 @@ import androidx.fragment.app.Fragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.blog.app.R;
 import com.blog.app.fragment.HomeFragment;
@@ -19,6 +21,9 @@ import com.blog.app.utils.AppPrefrences;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
+
+    private boolean isHomeLoaded = true, isProfileLoaded = false, isDoubleBackClicked = false;
+    private BottomNavigationView navigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             }
         });
 
-        BottomNavigationView navigationView = findViewById(R.id.bottomNavigationView);
+        navigationView = findViewById(R.id.bottomNavigationView);
         navigationView.setOnNavigationItemSelectedListener(this);
         loadFragment(new HomeFragment());
     }
@@ -64,20 +69,28 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.navigation_home:
-                loadFragment(new HomeFragment());
+                if (!isHomeLoaded) {
+                    isHomeLoaded = true;
+                    isProfileLoaded = false;
+                    loadFragment(new HomeFragment());
+                }
                 break;
 
             case R.id.navigation_post:
-                    Intent intent = new Intent(MainActivity.this, CustomGalleryActivity.class);
-                    startActivity(intent);
+                Intent intent = new Intent(MainActivity.this, CustomGalleryActivity.class);
+                startActivity(intent);
                 break;
 
             case R.id.navigation_profile:
-                loadFragment(new ProfileFragment());
+                if (!isProfileLoaded) {
+                    isProfileLoaded = true;
+                    isHomeLoaded = false;
+                    loadFragment(new ProfileFragment());
+                }
                 break;
         }
 
-        return false;
+        return true;
     }
 
     private boolean loadFragment(Fragment fragment) {
@@ -90,5 +103,36 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (isProfileLoaded) {
+            isHomeLoaded = true;
+            isProfileLoaded = false;
+            navigationView.setSelectedItemId(R.id.navigation_home);
+            loadFragment(new HomeFragment());
+        } else if (isDoubleBackClicked) {
+            super.onBackPressed();
+        } else {
+            isDoubleBackClicked = true;
+            Toast.makeText(this, "Please click BACK again to exit.", Toast.LENGTH_SHORT).show();
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    isDoubleBackClicked = false;
+                }
+            }, 2000);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        if(isHomeLoaded){
+            navigationView.setSelectedItemId(R.id.navigation_home);
+        }else {
+            navigationView.setSelectedItemId(R.id.navigation_profile);
+        }
+        super.onResume();
     }
 }
